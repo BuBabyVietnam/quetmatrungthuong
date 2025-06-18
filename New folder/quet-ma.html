@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎁 Quét mã trúng thưởng</title>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body {
+      background-color: #fdf6ec;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #689fb9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 500px;
+      padding: 30px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    input {
+      padding: 12px;
+      width: 100%;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 12px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #689fb9;
+      color: white;
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #578aa0;
+    }
+
+    #reader {
+      width: 100%;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .qr-button {
+      margin-top: 10px;
+      background-color: #fff;
+      color: #689fb9;
+      border: 2px dashed #689fb9;
+    }
+
+    .qr-button:hover {
+      background-color: #f1f1f1;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        width: 90%;
+        padding: 20px;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🎁 Nhập mã trúng thưởng</h2>
+    <input type="text" id="code" placeholder="Nhập mã tại đây..." />
+    <button onclick="checkCode()">🎯 Kiểm tra mã</button>
+    <button class="qr-button" onclick="startScanner()">📷 Quét mã QR</button>
+
+    <div id="reader"></div>
+  </div>
+
+  <script>
+    function checkCode(maTuQR = null) {
+      const code = maTuQR || document.getElementById("code").value.trim();
+      if (!code) {
+        Swal.fire("⚠️ Chưa nhập mã!", "Vui lòng nhập mã trước khi kiểm tra.", "warning");
+        return;
+      }
+
+      const apiUrl = "https://script.google.com/macros/s/AKfycby6zoss0uVX--MV7VMOOXnYEQAa1bE3p1wtw4oElZbG29Js8U2OGd6Trb9kGP5CG2QnmQ/exec?ma=" + encodeURIComponent(code);
+
+      fetch(apiUrl)
+        .then(res => res.text())
+        .then(data => {
+          if (data.includes("Chúc mừng")) {
+            Swal.fire("🎉 Trúng thưởng!", data, "success");
+          } else {
+            Swal.fire("❌ Không hợp lệ", data, "error");
+          }
+        })
+        .catch(err => {
+          Swal.fire("🚫 Lỗi kết nối", "Không thể kết nối đến máy chủ.", "error");
+          console.error(err);
+        });
+    }
+
+    function startScanner() {
+      const reader = document.getElementById("reader");
+      reader.style.display = "block";
+      const html5QrCode = new Html5Qrcode("reader");
+
+      html5QrCode.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: 250
+        },
+        (decodedText) => {
+          html5QrCode.stop();
+          reader.style.display = "none";
+          document.getElementById("code").value = decodedText;
+          checkCode(decodedText);
+        },
+        (errorMessage) => {
+          console.log("Lỗi quét: ", errorMessage);
+        }
+      ).catch(err => {
+        console.log("Không thể khởi động camera: ", err);
+      });
+    }
+  </script>
+</body>
+</html>
