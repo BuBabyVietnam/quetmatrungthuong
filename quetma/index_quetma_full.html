@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quét mã trúng thưởng</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fdf6ec;
+      color: #689fb9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    input {
+      padding: 0.8rem;
+      font-size: 1.1rem;
+      border: 2px solid #689fb9;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 1rem;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 0.8rem 1.5rem;
+      font-size: 1.1rem;
+      background-color: #689fb9;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 2rem;
+      font-size: 1.4rem;
+      font-weight: bold;
+      text-align: center;
+      min-height: 2rem;
+    }
+    video {
+      width: 100%;
+      max-width: 400px;
+      margin-top: 1.5rem;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎁 Quét mã trúng thưởng</h1>
+  <input id="ma" placeholder="Nhập mã hoặc quét QR..." />
+  <button onclick="checkMa()">Kiểm tra mã</button>
+  <div id="result"></div>
+  <video id="preview" playsinline autoplay></video>
+
+  <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+  <script>
+    function checkMa() {
+      const ma = document.getElementById('ma').value.trim();
+      if (!ma) return alert("Vui lòng nhập mã");
+
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbwTtWX.../exec?ma=' + ma;
+      fetch(scriptURL)
+        .then(res => res.text())
+        .then(text => {
+          document.getElementById('result').innerText = text;
+          if (text.includes("Chúc mừng")) {
+            document.body.style.backgroundColor = "#fff8dc";
+          } else {
+            document.body.style.backgroundColor = "#fdf6ec";
+          }
+        })
+        .catch(err => {
+          document.getElementById('result').innerText = "❌ Lỗi kết nối!";
+        });
+    }
+
+    // QR Code Scanner
+    let scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
+    scanner.addListener('scan', function (content) {
+      document.getElementById('ma').value = content;
+      checkMa();
+    });
+    Instascan.Camera.getCameras().then(function (cameras) {
+      if (cameras.length > 0) {
+        scanner.start(cameras[0]);
+      } else {
+        document.getElementById('preview').style.display = 'none';
+      }
+    }).catch(function (e) {
+      console.error(e);
+    });
+  </script>
+</body>
+</html>
